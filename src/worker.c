@@ -29,6 +29,8 @@
 
 #include "lpel_hwloc.h"
 
+#include "pthreadretval.h"
+
 #define WORKER_PTR(i) (workers[(i)])
 
 
@@ -171,7 +173,7 @@ void LpelWorkerCleanup(void)
   for(int i = 0; i < num_workers; i++) {
     wc = WORKER_PTR(i);
     /* wait for the worker to finish */
-    (void) pthread_join( wc->thread, NULL);
+    (void) pthread_join_retval( wc->thread, NULL);
   }
   /* cleanup the data structures */
   for(int i = 0; i < num_workers; i++) {
@@ -291,7 +293,7 @@ void LpelWorkerSpawn(void)
   for( i=0; i<num_workers; i++) {
     workerctx_t *wc = WORKER_PTR(i);
     /* spawn joinable thread */
-    (void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
+    (void) pthread_create_retval( &wc->thread, NULL, WorkerThread, wc);
   }
 }
 
@@ -384,8 +386,8 @@ workerctx_t *LpelWorkerGetContext(int id)
     /* LIFO of free tasks */
     atomic_init( &wc->free_tasks, NULL);
 
-    (void) pthread_create( &wc->thread, NULL, WorkerThread, wc);
-    (void) pthread_detach( wc->thread);
+    (void) pthread_create_retval( &wc->thread, NULL, WorkerThread, wc);
+    (void) pthread_detach_retval( wc->thread);
   }
 
   assert((wc != NULL) && "The worker of the requested id does not exist.");

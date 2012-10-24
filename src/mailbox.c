@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include "mailbox.h"
-
+#include "pthreadretval.h"
 
 /* mailbox structures */
 
@@ -29,7 +29,7 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
 {
   mailbox_node_t *node;
 
-  pthread_mutex_lock( &mbox->lock_free);
+  pthread_mutex_lock_retval( &mbox->lock_free);
   if (mbox->list_free != NULL) {
     /* pop free node off */
     node = mbox->list_free;
@@ -38,21 +38,21 @@ static mailbox_node_t *GetFree( mailbox_t *mbox)
     /* allocate new node */
     node = (mailbox_node_t *)malloc( sizeof( mailbox_node_t));
   }
-  pthread_mutex_unlock( &mbox->lock_free);
+  pthread_mutex_unlock_retval( &mbox->lock_free);
 
   return node;
 }
 
 static void PutFree( mailbox_t *mbox, mailbox_node_t *node)
 {
-  pthread_mutex_lock( &mbox->lock_free);
+  pthread_mutex_lock_retval( &mbox->lock_free);
   if ( mbox->list_free == NULL) {
     node->next = NULL;
   } else {
     node->next = mbox->list_free;
   }
   mbox->list_free = node;
-  pthread_mutex_unlock( &mbox->lock_free);
+  pthread_mutex_unlock_retval( &mbox->lock_free);
 }
 
 
@@ -83,7 +83,7 @@ void LpelMailboxDestroy( mailbox_t *mbox)
 
   assert( mbox->list_inbox == NULL);
   #if 0
-  pthread_mutex_lock( &mbox->lock_inbox);
+  pthread_mutex_lock_retval( &mbox->lock_inbox);
   while (mbox->list_inbox != NULL) {
     /* pop node off */
     node = mbox->list_inbox;
@@ -91,11 +91,11 @@ void LpelMailboxDestroy( mailbox_t *mbox)
     /* free the memory for the node */
     free( node);
   }
-  pthread_mutex_unlock( &mbox->lock_inbox);
+  pthread_mutex_unlock_retval( &mbox->lock_inbox);
   #endif
 
   /* free all free nodes */
-  pthread_mutex_lock( &mbox->lock_free);
+  pthread_mutex_lock_retval( &mbox->lock_free);
   while (mbox->list_free != NULL) {
     /* pop free node off */
     node = mbox->list_free;
@@ -103,7 +103,7 @@ void LpelMailboxDestroy( mailbox_t *mbox)
     /* free the memory for the node */
     free( node);
   }
-  pthread_mutex_unlock( &mbox->lock_free);
+  pthread_mutex_unlock_retval( &mbox->lock_free);
 
   /* destroy sync primitives */
   pthread_mutex_destroy( &mbox->lock_free);
@@ -122,7 +122,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
   node->msg = *msg;
 
   /* put node into inbox */
-  pthread_mutex_lock( &mbox->lock_inbox);
+  pthread_mutex_lock_retval( &mbox->lock_inbox);
   if ( mbox->list_inbox == NULL) {
     /* list is empty */
     mbox->list_inbox = node;
@@ -137,7 +137,7 @@ void LpelMailboxSend( mailbox_t *mbox, workermsg_t *msg)
     mbox->list_inbox->next = node;
     mbox->list_inbox = node;
   }
-  pthread_mutex_unlock( &mbox->lock_inbox);
+  pthread_mutex_unlock_retval( &mbox->lock_inbox);
 }
 
 
@@ -146,9 +146,9 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   mailbox_node_t *node;
 
   /* get node from inbox */
-  pthread_mutex_lock( &mbox->lock_inbox);
+  pthread_mutex_lock_retval( &mbox->lock_inbox);
   while( mbox->list_inbox == NULL) {
-      pthread_cond_wait( &mbox->notempty, &mbox->lock_inbox);
+      pthread_cond_wait_retval( &mbox->notempty, &mbox->lock_inbox);
   }
 
   assert( mbox->list_inbox != NULL);
@@ -161,7 +161,7 @@ void LpelMailboxRecv( mailbox_t *mbox, workermsg_t *msg)
   } else {
     mbox->list_inbox->next = node->next;
   }
-  pthread_mutex_unlock( &mbox->lock_inbox);
+  pthread_mutex_unlock_retval( &mbox->lock_inbox);
 
   /* copy the message */
   *msg = node->msg;

@@ -50,6 +50,7 @@
 
 #include "stream.h"
 #include "lpel/monitor.h"
+#include "pthreadretval.h"
 
 /** Macros for lock handling */
 
@@ -66,8 +67,8 @@
 #define PRODLOCK_TYPE       pthread_mutex_t
 #define PRODLOCK_INIT(x)    pthread_mutex_init(x, NULL)
 #define PRODLOCK_DESTROY(x) pthread_mutex_destroy(x)
-#define PRODLOCK_LOCK(x)    pthread_mutex_lock(x)
-#define PRODLOCK_UNLOCK(x)  pthread_mutex_unlock(x)
+#define PRODLOCK_LOCK(x)    pthread_mutex_lock_retval(x)
+#define PRODLOCK_UNLOCK(x)  pthread_mutex_unlock_retval(x)
 
 #endif /* STREAM_POLL_SPINLOCK */
 

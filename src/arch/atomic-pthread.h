@@ -3,6 +3,7 @@
  */
 
 #include <pthread.h>
+#include "../pthreadretval.h"
 
 #ifdef HAVE_PTHREAD_SPIN_INIT
 #define ATOMIC_PTHREAD_USE_SPINLOCK
@@ -20,8 +21,8 @@
 #  define __lock_type pthread_mutex_t
 #  define __lock_init(v) (void) pthread_mutex_init( &(v)->lock, NULL)
 #  define __lock_destroy(v) (void) pthread_mutex_destroy( &(v)->lock)
-#  define __lock_get(v) (void) pthread_mutex_lock( &(v)->lock)
-#  define __lock_release(v) (void) pthread_mutex_unlock( &(v)->lock)
+#  define __lock_get(v) (void) pthread_mutex_lock_retval( &(v)->lock)
+#  define __lock_release(v) (void) pthread_mutex_unlock_retval( &(v)->lock)
 #endif
     
 #define __do_typedef(T, name) \

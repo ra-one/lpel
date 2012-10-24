@@ -39,7 +39,9 @@ liblpel_la_SOURCES = \
 	src/placementscheduler.h \
 	src/worker.c \
 	src/worker.h \
-	src/workermsg.h
+	src/workermsg.h \
+	src/pthreadretval.c \
+	src/pthreadretval.h 
 liblpel_la_CPPFLAGS = -I$(top_srcdir)/include
 
 liblpel_mon_la_SOURCES = \
